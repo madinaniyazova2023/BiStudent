@@ -42,6 +42,8 @@ NuGet устанавливает OpenCvSharp, EF Core/SQLite, ClosedXML, xUnit �
 
 Railway выпускает сертификат HTTPS для публичного домена: [Public Networking](https://docs.railway.com/networking/public-networking). Путь Dockerfile задаётся конфигурацией: [Dockerfiles](https://docs.railway.com/builds/dockerfiles), [Config as Code](https://docs.railway.com/config-as-code/reference).
 
+В Dockerfile нет инструкции `VOLUME`: Railway отклоняет её при проверке образа. Постоянный том подключается только в настройках сервиса, как описано выше. После обновления со старой версии с `VOLUME /data` разверните последний commit ветки `main`.
+
 ## 3. Задать Variables
 
 Откройте `deploy/railway.env.example` и перенесите значения в Variables сервиса. Замените `YOUR-SERVICE` на выданный домен, а значение `Setup__AdminPassword` — на случайный пароль не короче 12 символов. Образец пароля из файла использовать нельзя.
@@ -123,6 +125,7 @@ dotnet publish BiStudent/BiStudent.csproj -c Release -r win-x64 --self-contained
 
 | Симптом | Что проверить |
 |---|---|
+| `dockerfile invalid: docker VOLUME ... is not supported` | Используется старая версия Dockerfile. Разверните последний commit `main`, где `VOLUME /data` удалён; сам Railway Volume `/data` оставьте подключённым |
 | Ошибка `Enrollment:PublicUrl` в логах | Полный HTTPS-адрес корня, без `/register/`, пробелов внутри, query-параметров |
 | Ошибка `Setup:AdminPassword` | На пустой базе пароль должен содержать минимум 12 символов |
 | Ошибка доступа к `/data` | Volume подключён к этому сервису, путь `/data`, переменная `RAILWAY_RUN_UID=0` |

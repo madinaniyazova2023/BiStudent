@@ -20,7 +20,7 @@ RUN mkdir -p /data && chown -R app:app /data
 USER app
 ENV ASPNETCORE_URLS=http://+:8080 \
     ConnectionStrings__Default="Data Source=/data/bistudent.db"
-VOLUME /data
+# Постоянный том /data подключается в Railway или Docker Compose.
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 CMD curl -fsS http://localhost:8080/health || exit 1
 ENTRYPOINT ["dotnet", "BiStudent.Server.dll"]
