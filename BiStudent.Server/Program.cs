@@ -15,6 +15,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+PublicHosting.Configure(builder);
 builder.Logging.AddConsole();
 var configuredConnection = builder.Configuration.GetConnectionString("Default");
 var defaultData = builder.Configuration["Storage:DataDirectory"] ??
@@ -77,7 +78,7 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         await context.HttpContext.Response.WriteAsJsonAsync(
-            new BiStudent.Contracts.ErrorDto("Слишком много попыток входа. Подождите минуту."), cancellationToken: ct);
+            new BiStudent.Contracts.ErrorDto("Слишком много запросов. Подождите и попробуйте снова."), cancellationToken: ct);
     };
 });
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -105,6 +106,7 @@ builder.Services.AddHostedService<BackupService.AutoBackupWorker>();
 builder.Services.AddScoped<FaceSampleHealth>();
 
 var app = builder.Build();
+if (builder.Configuration.GetValue<bool>("Hosting:RailwayProxy")) app.UseForwardedHeaders();
 if (configuredConnection is null)
 {
     var legacy = Path.Combine(builder.Environment.ContentRootPath, "App_Data");

@@ -52,7 +52,7 @@ internal sealed class EnrollmentCodeDialog : DarkForm
         var copies = Ui.Row();
         copies.Controls.Add(copyCode); copies.Controls.Add(copyLink);
         layout.Controls.Add(copies, 0, 6);
-        var instructions = Ui.Label("1. Студент открывает ссылку или сканирует QR-код (телефон и сервер — в одной сети).\n2. Вводит код и выбирает себя в списке группы.\n3. Делает три снимка лица.\n4. Вы проверяете снимки в разделе «Заявки на регистрацию» и подтверждаете.", 9.5f, Theme.Text);
+        var instructions = Ui.Label("1. Студент открывает ссылку или сканирует QR-код. Для облачного адреса подходит любая сеть; для локального — сеть сервера.\n2. Вводит код и выбирает себя в списке группы.\n3. Делает три снимка лица.\n4. Вы проверяете снимки в разделе «Заявки на регистрацию» и подтверждаете.", 9.5f, Theme.Text);
         instructions.TextAlign = ContentAlignment.TopLeft;
         layout.Controls.Add(instructions, 0, 7);
         var note = Ui.Label("Код действует для всей группы. Снимки не используются, пока вы их не подтвердите.", 8.5f, Theme.Muted);

@@ -6,7 +6,7 @@
   (преподаватель teacher / teacher123, группы, расписание, история посещаемости и оценок).
   Без этого ключа создаётся администратор admin / admin, пароль нужно сменить при первом входе.
 .PARAMETER Reset
-  Удалить базу сервера перед запуском (C:\ProgramData\BiStudent-Cloud, с -Demo — C:\ProgramData\BiStudent).
+  Удалить базу сервера перед запуском (C:\ProgramData\BiStudent, с настроенным Firebase — C:\ProgramData\BiStudent-Cloud).
   Все данные на этом компьютере будут потеряны; данные в облаке Firebase не удаляются.
 #>
 param([switch]$Demo, [switch]$Reset)
@@ -22,9 +22,19 @@ if (-not (dotnet --list-sdks | Select-String '^10\.')) {
     Write-Error 'Нужен .NET 10 SDK: https://dotnet.microsoft.com/download/dotnet/10.0'
 }
 
+$configuration = Get-Content (Join-Path $server 'appsettings.json') -Raw | ConvertFrom-Json
+$firebaseApiKey = if (Test-Path Env:Firebase__ApiKey) { $env:Firebase__ApiKey } else { $configuration.Firebase.ApiKey }
+$firebaseProjectId = if (Test-Path Env:Firebase__ProjectId) { $env:Firebase__ProjectId } else { $configuration.Firebase.ProjectId }
+$useFirebase = -not $Demo -and -not [string]::IsNullOrWhiteSpace($firebaseApiKey) -and -not [string]::IsNullOrWhiteSpace($firebaseProjectId)
 if ($Reset) {
-    $data = Join-Path $env:ProgramData ($(if ($Demo) { 'BiStudent' } else { 'BiStudent-Cloud' }))
-    if (Test-Path $data) { Remove-Item -Recurse -Force $data; Write-Host "База удалена: $data" }
+    $dataName = if ($useFirebase) { 'BiStudent-Cloud' } else { 'BiStudent' }
+    $expectedData = [IO.Path]::GetFullPath((Join-Path $env:ProgramData $dataName))
+    if (Test-Path -LiteralPath $expectedData) {
+        $resolvedData = (Resolve-Path -LiteralPath $expectedData).Path
+        if ($resolvedData -ne $expectedData) { throw 'Неожиданный путь базы; сброс отменён.' }
+        Remove-Item -LiteralPath $resolvedData -Recurse -Force
+        Write-Host "База удалена: $resolvedData"
+    }
 }
 
 Write-Host 'Сборка решения…'
@@ -44,7 +54,7 @@ Write-Host "Запуск сервера на порту $port…"
 $serverArgs = @('run', '--project', $server, '-c', 'Release', '--no-build', '--no-launch-profile', '--urls', "http://*:$port")
 if ($Demo) { $serverArgs += '--Firebase:ApiKey=' }
 $serverProcess = Start-Process dotnet -ArgumentList $serverArgs `
-    -WorkingDirectory $server -WindowStyle Minimized -PassThru
+    -WorkingDirectory $server -WindowStyle Hidden -PassThru
 
 $ready = $false
 for ($i = 0; $i -lt 60; $i++) {

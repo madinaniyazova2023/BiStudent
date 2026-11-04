@@ -26,6 +26,14 @@ internal static class LocalServer
 
     public static bool IsBundled => ExecutablePath is not null;
 
+    // Наличие Server рядом с exe не должно перехватывать подключение к облачному серверу.
+    internal static bool IsLocalAddress(string? address) =>
+        Uri.TryCreate(address?.Trim(), UriKind.Absolute, out var uri) &&
+        uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback && uri.Port == 5080 &&
+        uri.AbsolutePath == "/" && uri.Query.Length == 0 && uri.Fragment.Length == 0 && uri.UserInfo.Length == 0;
+
+    public static bool ShouldStart(string? address) => IsBundled && IsLocalAddress(address);
+
     public static void Start()
     {
         if (ExecutablePath is not { } executable) return;
@@ -36,6 +44,7 @@ internal static class LocalServer
     public static async Task<bool> WaitUntilReadyAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         if (!IsBundled) return true;
+        Start();
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(timeout);
         try

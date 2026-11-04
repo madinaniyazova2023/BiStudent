@@ -22,8 +22,10 @@ public static class EnrollmentEndpoints
 
         var groups = app.MapGroup("/api/groups").RequireAuthorization()
             .AddEndpointFilter(ApiEndpoints.HandleErrorsAsync);
-        groups.MapGet("/{id:int}/enrollment-code", async (int id, HttpContext http, EnrollmentService service) =>
+        groups.MapGet("/{id:int}/enrollment-code", async (int id, ClaimsPrincipal user, AppDbContext db,
+            HttpContext http, EnrollmentService service) =>
         {
+            await ApiEndpoints.EnsureGroupAsync(db, user, id);
             var code = await service.GetActiveAsync(id);
             return code is null ? Results.NoContent() : Results.Ok(service.ToDto(code, http));
         });

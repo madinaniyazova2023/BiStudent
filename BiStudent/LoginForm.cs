@@ -16,12 +16,12 @@ internal sealed class LoginForm : DarkForm
 
     public LoginForm(string? initialError = null)
     {
-        Text = "BiStudent · Вход"; ClientSize = new Size(920, 560);
+        Text = "BiStudent · Вход"; ClientSize = new Size(920, 620);
         FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false; MinimizeBox = false;
         StartPosition = FormStartPosition.CenterScreen; AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = Theme.Background; ForeColor = Theme.Text; Font = Theme.Font(10);
         Build();
-        server.Text = LocalServer.IsBundled ? LocalServer.Url : settings.ServerUrl;
+        server.Text = settings.ServerUrl;
         login.Text = settings.LastLogin;
         remember.Checked = settings.RememberMe;
         error.Text = initialError ?? "";
@@ -36,18 +36,14 @@ internal sealed class LoginForm : DarkForm
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 54)); layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 46));
         var left = new SmoothPanel { Dock = DockStyle.Fill, Margin = new Padding(36, 28, 16, 28), Padding = new Padding(28) };
         var form = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 11, BackColor = Theme.Surface };
-        var bundled = LocalServer.IsBundled;
-        foreach (var height in new[] { 48, 45, bundled ? 0 : 22, bundled ? 0 : 38, 22, 38, 22, 38, 36, 50, 44 }) form.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
+        foreach (var height in new[] { 48, 45, 22, 38, 22, 38, 22, 38, 36, 50, 44 }) form.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
         var logo = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
         var mark = new Label { Text = "✓", Width = 42, Height = 42, BackColor = Theme.Accent, ForeColor = Theme.Text, Font = Theme.Font(20, FontStyle.Bold), TextAlign = ContentAlignment.MiddleCenter };
         var brand = new Label { Text = "BiStudent", Width = 240, Height = 42, ForeColor = Theme.Text, Font = Theme.Font(19, FontStyle.Bold), TextAlign = ContentAlignment.MiddleLeft };
         logo.Controls.Add(mark); logo.Controls.Add(brand); form.Controls.Add(logo, 0, 0);
         form.Controls.Add(Ui.Label("Кабинет преподавателя", 13, Theme.Text, FontStyle.Bold), 0, 1);
-        if (!bundled)
-        {
-            form.Controls.Add(Ui.Label("Адрес сервера", 9, Theme.Muted), 0, 2);
-            server.Dock = DockStyle.Fill; form.Controls.Add(server, 0, 3);
-        }
+        form.Controls.Add(Ui.Label("Адрес сервера", 9, Theme.Muted), 0, 2);
+        server.Dock = DockStyle.Fill; form.Controls.Add(server, 0, 3);
         form.Controls.Add(Ui.Label("Логин", 9, Theme.Muted), 0, 4);
         login.Dock = DockStyle.Fill; form.Controls.Add(login, 0, 5);
         form.Controls.Add(Ui.Label("Пароль", 9, Theme.Muted), 0, 6);
@@ -83,7 +79,8 @@ internal sealed class LoginForm : DarkForm
         ApiClient? client = null;
         try
         {
-            if (LocalServer.IsBundled)
+            var address = server.Text.Trim();
+            if (LocalServer.ShouldStart(address))
             {
                 error.ForeColor = Theme.Muted;
                 error.Text = "Запуск сервера…";
@@ -96,7 +93,6 @@ internal sealed class LoginForm : DarkForm
                 error.ForeColor = Theme.Red;
                 error.Text = "";
             }
-            var address = LocalServer.IsBundled ? LocalServer.Url : server.Text.Trim();
             if (!ClientSettings.SameServer(settings.ServerUrl, address))
                 settings.StoreRefreshToken(null);
             settings.ServerUrl = address; settings.LastLogin = login.Text.Trim();

@@ -13,6 +13,9 @@ public sealed class SeedService(AppDbContext db, IConfiguration configuration, I
     public async Task SeedAsync()
     {
         if (await db.Teachers.AnyAsync()) return;
+        if (configuration.GetValue<bool>("Hosting:Public") &&
+            (configuration["Setup:AdminPassword"]?.Length ?? 0) < 12)
+            throw new InvalidOperationException("Для первого запуска публичного сервера задайте Setup:AdminPassword длиной не менее 12 символов.");
         // Демо-данные в облачном режиме ушли бы в общую базу, поэтому с Firebase создаётся только администратор.
         var demo = configuration.GetValue("Demo:Enabled", false) && !FirebaseOptions.IsConfigured(configuration);
         var teacher = new Teacher {

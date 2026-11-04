@@ -20,7 +20,7 @@ internal static class AppUpdater
         {
             var path = Environment.GetEnvironmentVariable("BISTUDENT_UPDATE_SOURCE");
             IUpdateSource source = string.IsNullOrWhiteSpace(path)
-                ? new GithubSource("https://github.com/logreus-cloud/BiStudent-public", accessToken: null, prerelease: false)
+                ? new GithubSource("https://github.com/madinaniyazova2023/BiStudent", accessToken: null, prerelease: false)
                 : new SimpleFileSource(new DirectoryInfo(path));
             return new UpdateManager(source);
         }

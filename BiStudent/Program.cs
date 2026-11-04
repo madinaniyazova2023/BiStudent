@@ -34,22 +34,17 @@ internal static class Program
             MessageBox.Show("BiStudent уже открыт.", "BiStudent", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return 0;
         }
-        LocalServer.Start();
         while (true)
         {
             var settings = ClientSettings.Load();
-            if (LocalServer.IsBundled && !ClientSettings.SameServer(settings.ServerUrl, LocalServer.Url))
-            {
-                settings.ServerUrl = LocalServer.Url;
-                settings.Save();
-            }
             ApiClient? resumed = null;
             string? loginError = null;
             if (settings.RememberMe && settings.LoadRefreshToken() is { } token)
             {
                 try
                 {
-                    if (LocalServer.IsBundled && !Task.Run(() => LocalServer.WaitUntilReadyAsync(TimeSpan.FromSeconds(60))).GetAwaiter().GetResult())
+                    if (LocalServer.ShouldStart(settings.ServerUrl) &&
+                        !Task.Run(() => LocalServer.WaitUntilReadyAsync(TimeSpan.FromSeconds(60))).GetAwaiter().GetResult())
                         throw new InvalidOperationException("Не удалось запустить сервер BiStudent. Перезапустите программу.");
                     resumed = new ApiClient(settings);
                     resumed.RefreshTokenChanged += value => { settings.StoreRefreshToken(value); settings.Save(); };

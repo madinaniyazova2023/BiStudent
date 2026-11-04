@@ -57,6 +57,7 @@ public sealed class AuditFixesTests : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, (await third.PutAsJsonAsync($"/api/students/{student.Id}",
             new SaveStudentRequest("Первое имя", target.Id), JsonOptions)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await third.DeleteAsync($"/api/students/{student.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await third.GetAsync($"/api/groups/{group.Id}/enrollment-code")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await third.PostAsJsonAsync($"/api/groups/{group.Id}/enrollment-code",
             new CreateEnrollmentCodeRequest(), JsonOptions)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await third.DeleteAsync($"/api/groups/{group.Id}/enrollment-code")).StatusCode);

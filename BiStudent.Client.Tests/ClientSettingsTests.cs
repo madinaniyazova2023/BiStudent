@@ -85,4 +85,18 @@ public sealed class ClientSettingsTests : IDisposable
         settings.RefreshTokenServer = settings.ServerUrl;
         Assert.Null(settings.LoadRefreshToken());
     }
+
+    [Theory]
+    [InlineData("http://localhost:5080", true)]
+    [InlineData("http://127.0.0.1:5080/", true)]
+    [InlineData("http://[::1]:5080/", true)]
+    [InlineData("https://school.up.railway.app", false)]
+    [InlineData("http://192.168.1.10:5080", false)]
+    [InlineData("http://localhost:6080", false)]
+    [InlineData("http://localhost:5080/api", false)]
+    [InlineData("invalid", false)]
+    public void OnlyBundledServerAddressNeedsLocalStartup(string url, bool expected)
+    {
+        Assert.Equal(expected, LocalServer.IsLocalAddress(url));
+    }
 }
