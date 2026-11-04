@@ -83,6 +83,24 @@ public sealed class PublicHostingTests : IDisposable
         Assert.Equal(secondClientStatus, await CheckAsync("203.0.113.2"));
     }
 
+    [Theory]
+    [InlineData("", "https://school.up.railway.app/register/")]
+    [InlineData("https://ВАШ-ДОМЕН.up.railway.app", "https://school.up.railway.app/register/")]
+    [InlineData("https://YOUR-SERVICE.up.railway.app", "https://school.up.railway.app/register/")]
+    [InlineData("https://register.school.example", "https://register.school.example/register/")]
+    public async Task EnrollmentQrUsesActualRailwayDomainInsteadOfPlaceholder(string configured, string expected)
+    {
+        using var baseFactory = CreateFactory(url: configured);
+        using var factory = baseFactory.WithWebHostBuilder(builder =>
+            builder.UseSetting("RAILWAY_PUBLIC_DOMAIN", "school.up.railway.app"));
+        using var client = factory.CreateClient();
+        var login = await PostAsync<TokenResponse>(client, "/api/auth/login", new LoginRequest("admin", Password));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login.AccessToken);
+        var group = await PostAsync<GroupDto>(client, "/api/groups", new CreateGroupRequest("QR Railway"));
+        var code = await PostAsync<EnrollmentCodeDto>(client, $"/api/groups/{group.Id}/enrollment-code", new CreateEnrollmentCodeRequest());
+        Assert.Equal(expected, Assert.Single(code.Links));
+    }
+
     private WebApplicationFactory<Program> CreateFactory(string url = "https://school.example", bool demo = false,
         string password = Password, bool proxy = true) => new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
     {

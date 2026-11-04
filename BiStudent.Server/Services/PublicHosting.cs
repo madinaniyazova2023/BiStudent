@@ -7,6 +7,17 @@ public static class PublicHosting
     public static void Configure(WebApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
+        var publicUrl = configuration["Enrollment:PublicUrl"];
+        var railwayDomain = configuration["RAILWAY_PUBLIC_DOMAIN"]?.Trim();
+        // При копировании .env часто остаётся домен из примера. Railway уже сообщает
+        // реальный публичный домен; используем его для пустого значения или шаблона.
+        // Явно настроенный собственный домен сохраняем.
+        if (configuration.GetValue<bool>("Hosting:RailwayProxy") &&
+            !string.IsNullOrWhiteSpace(railwayDomain) && Uri.CheckHostName(railwayDomain) == UriHostNameType.Dns &&
+            (string.IsNullOrWhiteSpace(publicUrl) ||
+             new[] { "ВАШ-ДОМЕН", "YOUR-SERVICE", "YOUR-DOMAIN" }
+                 .Any(placeholder => publicUrl.Contains(placeholder, StringComparison.OrdinalIgnoreCase))))
+            configuration["Enrollment:PublicUrl"] = "https://" + railwayDomain;
         if (configuration.GetValue<bool>("Hosting:Public"))
         {
             if (configuration.GetValue<bool>("Demo:Enabled"))

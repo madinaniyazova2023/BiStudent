@@ -72,6 +72,8 @@ Railway выпускает сертификат HTTPS для публичног�
 
 В этой версии оба значения Firebase уже настроены в `BiStudent.Server/appsettings.json`. Удалите из Railway Variables пустые `Firebase__ApiKey` и `Firebase__ProjectId`, если добавляли их по ранней инструкции: переменные окружения имеют приоритет над файлом. Либо укажите в них значения существующего проекта из файла. Новую базу Firebase создавать не нужно. После Deploy войдите прежним логином и паролем; при необходимости нажмите синхронизацию «☁».
 
+Если `Hosting__RailwayProxy=true`, для пустого `Enrollment__PublicUrl` или оставленного домена из примера (`ВАШ-ДОМЕН`, `YOUR-SERVICE`, `YOUR-DOMAIN`) сервер подставляет настоящий `RAILWAY_PUBLIC_DOMAIN`. QR тогда ведёт на текущий сервер Railway. Явно указанный собственный домен остаётся без изменений.
+
 Railway монтирует том от root; текущий Dockerfile по умолчанию использует пользователя app, поэтому документация Railway указывает `RAILWAY_RUN_UID=0`: [права Volume](https://docs.railway.com/volumes#permissions).
 
 `Hosting__RailwayProxy=true` применяйте только за HTTP edge Railway. Не открывайте этот же порт через TCP proxy: доверие к заголовкам рассчитано на платформенный HTTP-прокси. При таком режиме адрес клиента берётся из добавленного Railway `X-Real-IP`, чтобы один студент не исчерпывал лимит всех посетителей. См. [заголовки Railway](https://docs.railway.com/networking/public-networking/specs-and-limits). Ограничения по IP остаются общими для телефонов за одним NAT.
