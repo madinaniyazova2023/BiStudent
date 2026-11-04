@@ -2,7 +2,7 @@
 
 # BiStudent
 
-Версия для [madinaniyazova2023/BiStudent](https://github.com/madinaniyazova2023/BiStudent), основанная на [logreus-cloud/BiStudent-public](https://github.com/logreus-cloud/BiStudent-public). Регистрация через интернет и настройка сервера: [инструкция Railway](deploy/RAILWAY.md). Firebase по умолчанию отключён; новая установка не подключается к облаку исходного проекта.
+Версия для [madinaniyazova2023/BiStudent](https://github.com/madinaniyazova2023/BiStudent), основанная на [logreus-cloud/BiStudent-public](https://github.com/logreus-cloud/BiStudent-public). Регистрация через интернет и настройка сервера: [инструкция Railway](deploy/RAILWAY.md). Подключён существующий Firebase `bistudent-logreus`: преподаватели входят прежними учётными записями, группы загружаются из общей базы.
 
 Электронный журнал преподавателя колледжа: посещаемость отмечается по распознаванию лиц, оценки и итог ведутся там же, журнал выгружается в Excel для печати. Данные всех преподавателей сводятся в облаке Firebase, а без интернета программа работает офлайн.
 
@@ -167,7 +167,7 @@ flowchart LR
 
 ## Своё облако Firebase
 
-В этой версии `Firebase:ApiKey` и `Firebase:ProjectId` в `appsettings.json` пустые. Сервер работает самостоятельно с SQLite и локальными учётными записями; при размещении на Railway они хранятся в постоянном томе. Чтобы включить Firebase для своего колледжа:
+В этой версии `Firebase:ApiKey` и `Firebase:ProjectId` в `appsettings.json` указывают на существующий проект `bistudent-logreus`. После входа существующего преподавателя сервер загружает прежние группы и студентов; SQLite на постоянном томе служит локальным кешем. Не восстанавливайте поверх общей базы старую локальную копию ради подключения. Для отдельного проекта своего колледжа:
 
 1. Создайте проект в [консоли Firebase](https://console.firebase.google.com), включите Authentication → Email/Password и создайте базу Firestore.
 2. Опубликуйте правила: `firebase deploy --only firestore:rules --project <id проекта>`.
