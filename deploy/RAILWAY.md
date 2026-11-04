@@ -132,6 +132,7 @@ dotnet publish BiStudent/BiStudent.csproj -c Release -r win-x64 --self-contained
 | Симптом | Что проверить |
 |---|---|
 | `dockerfile invalid: docker VOLUME ... is not supported` | Используется старая версия Dockerfile. Разверните последний commit `main`, где `VOLUME /data` удалён; сам Railway Volume `/data` оставьте подключённым |
+| `OpenCvSharp.Internal.NativeMethods` при снимках или камере | Сервер не загрузил нативную библиотеку OpenCV. Текущий Dockerfile устанавливает GTK3, libdrm и libatomic и проверяет зависимости через `ldd`. После Deploy проверьте авторизованный `/api/recognition/status`: нужно `ok: true`; одного `/health` недостаточно. Полная причина записывается в Deploy Logs |
 | Ошибка `Enrollment:PublicUrl` в логах | Полный HTTPS-адрес корня, без `/register/`, пробелов внутри, query-параметров |
 | Ошибка `Setup:AdminPassword` | На пустой базе пароль должен содержать минимум 12 символов |
 | Ошибка доступа к `/data` | Volume подключён к этому сервису, путь `/data`, переменная `RAILWAY_RUN_UID=0` |

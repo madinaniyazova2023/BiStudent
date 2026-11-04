@@ -61,10 +61,20 @@ jobs:
       - run: docker build -f BiStudent.Server/Dockerfile -t bistudent-server .
       - name: Smoke test
         run: |
-          docker run -d --name bistudent -p 5080:8080 bistudent-server
-          for i in $(seq 1 30); do curl -fsS http://localhost:5080/health && exit 0; sleep 2; done
-          docker logs bistudent
-          exit 1
+          docker run -d --name bistudent -p 127.0.0.1:5080:8080 \
+            -e Firebase__ApiKey= -e Firebase__ProjectId= -e Demo__Enabled=true bistudent-server
+          ready=false
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:5080/health; then ready=true; break; fi
+            sleep 2
+          done
+          if [ "$ready" != true ]; then docker logs bistudent; exit 1; fi
+          token=$(curl -fsS http://localhost:5080/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"login":"teacher","password":"teacher123"}' \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
+          curl -fsS http://localhost:5080/api/recognition/status -H "Authorization: Bearer $token" \
+            | python3 -c 'import json,sys; result=json.load(sys.stdin); print(result); sys.exit(0 if result.get("ok") else 1)'
 
   publish:
     runs-on: windows-2025

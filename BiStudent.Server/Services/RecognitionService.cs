@@ -9,7 +9,8 @@ namespace BiStudent.Server.Services;
 
 public sealed record FaceCheckResult(bool Ok, string Message, List<string> Problems, List<byte[]> Crops, string? SimilarTo, double SimilarScore);
 
-public sealed class RecognitionService(IServiceScopeFactory scopes, IDataProtectionProvider protection, IConfiguration configuration) : IDisposable
+public sealed class RecognitionService(IServiceScopeFactory scopes, IDataProtectionProvider protection, IConfiguration configuration,
+    ILogger<RecognitionService>? logger = null) : IDisposable
 {
     private const int MaximumEnrollImages = 6;
     private readonly object gate = new();
@@ -34,7 +35,11 @@ public sealed class RecognitionService(IServiceScopeFactory scopes, IDataProtect
             if (initialized) return;
             initialized = true;
             try { engine = new FaceEngine(); }
-            catch (Exception ex) { error = ex.Message; }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex, "Не удалось загрузить OpenCV или модели распознавания лиц.");
+                error = ex.Message;
+            }
         }
     }
 
